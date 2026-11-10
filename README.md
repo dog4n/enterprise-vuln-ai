@@ -2,130 +2,105 @@
 
 *(🇹🇷 Türkçe versiyonu aşağıdadır / Turkish version is below)*
 
-What a cybersecurity analyst spends the most time on is not finding vulnerabilities, but **creating the business context for them.** This project is a "Micro-Automation" tool that automatically enriches raw vulnerability outputs (JSONL) from security scanners like Nuclei using Google Gemini AI. Instead of just listing vulnerabilities by their technical names, it generates elegant HTML reports ready to be presented to executives and CISOs by providing **Real Business Risk**, **Attacker Perspective**, and **Immediate Remediation Steps**.
+Security analysts spend more time explaining findings than finding them. EVCE takes raw
+**Nuclei** output and uses **Google Gemini** to add business context to every finding:
+**real business risk**, **attacker perspective** and **immediate remediation**. The result is a
+single HTML report you can hand to a manager or CISO.
 
 ## ✨ Features
-* **Automated Enrichment:** Automatically parses scanner outputs (JSON/JSONL).
-* **AI-Powered Risk Engine:** Analyzes the financial impact, reputation loss, and legal/compliance risks (GDPR, etc.) of the vulnerability.
-* **Executive Summary (HTML):** Transforms raw logs from the terminal into readable, styled HTML cards categorized by severity levels.
-* **Lightweight & Fast:** Does not require any heavy databases or complex setups.
+* **Reads Nuclei output directly:** JSONL (`nuclei -jsonl -o out.json`) or a JSON array.
+* **De-duplicated and sorted:** same host + finding appears once, critical first.
+* **AI risk context:** three short, executive-level sections per finding.
+* **Self-contained HTML report:** severity summary + one card per finding, no external assets.
+* **Turkish or English** reports (`--lang tr|en`).
+* **Dry run:** preview the report without an API key (`--dry-run`).
 
 ## 🚀 Installation
-You can get the tool up and running in seconds on your local environment or a cloud server (Ubuntu/Debian, etc.).
-
-### 1. Clone the Repository
 ```bash
-git clone [https://github.com/adstech/enterprise-vuln-ai.git](https://github.com/adstech/enterprise-vuln-ai.git)
+git clone https://github.com/dog4n/enterprise-vuln-ai.git
 cd enterprise-vuln-ai
+python3 -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
 ```
 
-### 2. Create a Virtual Environment (Recommended)
-To avoid polluting your system packages, use an isolated Python environment:
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
+## ⚙️ Usage
 
-### 3. Install Dependencies
-```bash
-pip install google-genai
-```
-
-## ⚙️ Configuration and Usage
-
-### 1. Set the API Key
-Export your Google Gemini API key (which you can get for free from Google AI Studio) to your environment variables:
+### 1. Set the API key
+Get a free key from Google AI Studio:
 ```bash
 export GEMINI_API_KEY="Your_API_Key_Here"
 ```
 
-### 2. Prepare Scan Data
-Place a JSONL file (one JSON object per line) named `nuclei_output.json` in the project directory. An example line should look like this:
-```json
-{"host": "login.company.com", "info": {"name": "Reflected Cross-Site Scripting (XSS)", "severity": "medium"}}
-```
-
-### 3. Run the Engine
+### 2. Run a scan (or use the sample file)
 ```bash
-python3 ai_risk_engine.py
+nuclei -u https://target.example -jsonl -o nuclei_output.json
+```
+A sample `nuclei_output.json` is included so you can try the tool right away.
+
+### 3. Build the report
+```bash
+python3 ai_risk_engine.py                                # nuclei_output.json -> risk_report.html (Turkish)
+python3 ai_risk_engine.py scan.json -o report.html --lang en
+python3 ai_risk_engine.py --dry-run                      # no API call, layout preview only
 ```
 
-### 4. View the Report
-Once the process is complete, a `Kurumsal_Risk_Raporu.html` file will be generated in the directory. If you are working on a remote cloud server, you can start a simple web server to view it:
+| Option | Default | Description |
+|---|---|---|
+| `input` | `nuclei_output.json` | Nuclei JSONL / JSON file |
+| `-o, --output` | `risk_report.html` | Report path |
+| `--lang` | `tr` | Report language: `tr` or `en` |
+| `--model` | `gemini-flash-latest` | Gemini model (or set `GEMINI_MODEL`) |
+| `--limit` | `0` (all) | Analyse only the first N findings |
+| `--dry-run` | off | Skip the AI call |
+
+### 4. View the report
+Open `risk_report.html` in a browser. On a remote server:
 ```bash
 python3 -m http.server 8080
 ```
-Then, navigate to `http://localhost:8080` (or your server's IP address) in your browser to review the executive report.
 
-## 🤝 Contributing
-This project is a community effort aimed at reducing the cognitive load and decision-making time of security analysts. Pull Requests (PRs) and new ideas (Issues) are always welcome!
+> ⚠️ Finding details (host, URL, description) are sent to the Gemini API. Do not use it with
+> data you are not allowed to share with a third-party service.
 
 ## 📜 License
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+MIT. See `LICENSE`.
 
 ---
 
 # 🛡️ Enterprise Vulnerability Context Engine (EVCE) - Türkçe
 
-Bir siber güvenlik analistinin en çok zaman harcadığı şey zafiyet bulmak değil, **bulunan zafiyetin bağlamını (context) oluşturmaktır.** Bu proje, Nuclei gibi güvenlik tarayıcılarından alınan ham (JSONL) zafiyet çıktılarını Google Gemini AI kullanarak otomatik olarak zenginleştiren bir "Mikro Otomasyon" aracıdır. Zafiyetleri sadece teknik isimleriyle listelemek yerine; **Gerçek İş Riski**, **Saldırgan Perspektifi** ve **Acil Çözüm Önerisi** sunarak yöneticilere ve CISO'lara sunulmaya hazır şık HTML raporlar üretir.
+Bir güvenlik analisti zamanının çoğunu zafiyet bulmaya değil, **bulunan zafiyetin bağlamını
+anlatmaya** harcar. EVCE, **Nuclei** çıktısını okur ve **Google Gemini** ile her bulguya
+**Gerçek İş Riski**, **Saldırgan Perspektifi** ve **Acil Çözüm Önerisi** ekler. Sonuç,
+yöneticiye ya da CISO'ya doğrudan iletilebilecek tek bir HTML rapordur.
 
 ## ✨ Özellikler
-
-* **Otomatik Zenginleştirme:** Tarayıcı çıktılarını (JSON/JSONL) otomatik okur.
-* **Yapay Zeka Destekli Risk Motoru:** Zafiyetin kuruma maliyetini, itibar kaybını ve yasal risklerini (KVKK vb.) analiz eder.
-* **Yönetici Özeti (HTML):** Siyah terminal ekranındaki logları, kurumsal renklere ve önem derecelerine göre kategorize edilmiş okunabilir HTML kartlarına dönüştürür.
-* **Hafif ve Hızlı:** Herhangi bir ağır veritabanı veya karmaşık kurulum gerektirmez.
+* **Nuclei çıktısını doğrudan okur:** JSONL (`nuclei -jsonl -o out.json`) veya JSON dizi.
+* **Tekrarlar ayıklanır, sıralanır:** aynı hedef + bulgu bir kez, kritik olanlar en üstte.
+* **Yapay zeka ile risk bağlamı:** her bulgu için yönetici seviyesinde üç kısa başlık.
+* **Tek dosya HTML rapor:** önem derecesi özeti + bulgu başına bir kart.
+* **Türkçe veya İngilizce** rapor (`--lang tr|en`).
+* **Deneme modu:** API anahtarı olmadan rapor görünümünü dene (`--dry-run`).
 
 ## 🚀 Kurulum
-
-Aracı kendi lokal ortamınızda veya bir bulut sunucusunda (Ubuntu/Debian vb.) saniyeler içinde ayağa kaldırabilirsiniz.
-
-### 1. Repoyu Klonlayın
 ```bash
-git clone [https://github.com/adstech/enterprise-vuln-ai.git](https://github.com/adstech/enterprise-vuln-ai.git)
+git clone https://github.com/dog4n/enterprise-vuln-ai.git
 cd enterprise-vuln-ai
+python3 -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
 ```
 
-### 2. Sanal Ortam Oluşturun (Önerilen)
-Sistem paketlerinizi kirletmemek için izole bir Python ortamı kullanın:
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-### 3. Gereksinimleri Yükleyin
-```bash
-pip install google-genai
-```
-
-## ⚙️ Yapılandırma ve Kullanım
-
-### 1. API Anahtarını Tanımlama
-Google AI Studio üzerinden ücretsiz alabileceğiniz API anahtarınızı sisteminize tanıtın:
+## ⚙️ Kullanım
 ```bash
 export GEMINI_API_KEY="Sizin_API_Anahtariniz"
+nuclei -u https://hedef.example -jsonl -o nuclei_output.json   # veya örnek dosyayı kullanın
+python3 ai_risk_engine.py                                       # -> risk_report.html
+python3 ai_risk_engine.py --dry-run                             # API çağrısı yapmadan önizleme
 ```
+Tüm seçenekler için yukarıdaki tabloya bakın veya `python3 ai_risk_engine.py -h` çalıştırın.
 
-### 2. Tarama Verisini Hazırlama
-Aracın bulunduğu dizine `nuclei_output.json` adında bir JSONL (her satırda bir JSON objesi) dosyası koyun. Örnek bir satır şu formatta olmalıdır:
-```json
-{"host": "login.sirketim.com", "info": {"name": "Reflected Cross-Site Scripting (XSS)", "severity": "medium"}}
-```
-
-### 3. Motoru Çalıştırma
-```bash
-python3 ai_risk_engine.py
-```
-
-### 4. Raporu Görüntüleme
-İşlem tamamlandığında dizinde `Kurumsal_Risk_Raporu.html` dosyası oluşacaktır. Bulut sunucuda çalışıyorsanız raporu görüntülemek için basit bir web sunucusu başlatabilirsiniz:
-```bash
-python3 -m http.server 8080
-```
-Ardından tarayıcınızdan `http://localhost:8080` (veya sunucu IP'niz) adresine giderek raporu inceleyebilirsiniz.
-
-## 🤝 Katkıda Bulunma
-Bu proje, analistlerin karar verme süresini kısaltmayı amaçlayan bir topluluk eforudur. Pull Request'ler (PR) ve yeni fikirler (Issue) her zaman memnuniyetle karşılanır!
+> ⚠️ Bulgu detayları (hedef, URL, açıklama) Gemini API'ye gönderilir. Üçüncü taraf bir
+> servisle paylaşma yetkiniz olmayan verilerle kullanmayın.
 
 ## 📜 Lisans
-Bu proje MIT Lisansı ile lisanslanmıştır. Detaylar için repodaki `LICENSE` dosyasına göz atabilirsiniz.
+MIT. Detaylar için `LICENSE` dosyasına bakın.

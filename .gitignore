@@ -1,18 +1,18 @@
-# Çevre değişkenleri ve gizli anahtarlar
+# Secrets
 .env
 .env.local
 
-# Sanal ortam klasörleri (GitHub'a gitmesine gerek yok, boyutu çok büyütür)
+# Virtual environments
 venv/
 env/
+.venv/
 
-# Python önbellek dosyaları
+# Python cache
 __pycache__/
 *.pyc
 
-# Otomatik üretilen raporlar (Herkes kendi raporunu kendi üretsin)
-Kurumsal_Risk_Raporu.html
+# Generated reports
+*.html
 
-# İşletim sistemi çöp dosyaları (Mac için)
+# OS
 .DS_Store
-Miniconda3-latest-Linux-x86_64.sh
